@@ -1,27 +1,55 @@
 'use strict';
-app.controller('HomePageController', ['$rootScope', '$scope', 'HomePageService', '$localStorage','$document',
-  	function($rootScope, $scope, HomePageService, $localStorage, $document) 
+app.controller('HomePageController', ['$rootScope', '$scope', 'HomePageService', '$localStorage', '$filter',
+  	function($rootScope, $scope,  HomePageService, $localStorage, $filter) 
   	{	
-  		$scope.websites = [];
-  		$scope.perPage = 5;
-  		$scope.maxSize = 5;
-        $scope.totalItems = '';
-        $scope.page = 1;
 
-        (function getWebsiteData()
+        var page = 1;
+        var perPage = 3;
+        $scope.isPreloader = true;
+
+        $scope.sort =
+        {
+            name: 'learner'
+        }
+  		$scope.courses = [];
+        $scope.reverse = true;
+        (function getcourseData()
 	    {	
-	    	HomePageService.getWebsite()
+	    	HomePageService.getcourseData()
 	    	.success(function(data)
 	    	{	
-	    		$localStorage.websiteData = data.websites;
-	    		var length = Math.min(data.websites.length, $scope.perPage);
-	    		for (var i = 0; i < length; i++) 
-	    		{
-	    			$scope.websites.push(data.websites[i]);
-	    		}
-	    		$scope.totalItems = data.websites.length;
-	    		$rootScope.totalWebsite = data.websites.length;
-
+                var dataLength = data.paths.length;
+                for (var i = 0; i < dataLength; i++) 
+                {
+                    data.paths[i].upvote = 0;
+                    data.paths[i].downvote = 0;
+                }
+                if(data.paths.length > 3)
+                {
+                    $('.right-arrow').prop('disabled', false);
+                }
+                else
+                {
+                    $('.right-arrow').prop('disabled', true);
+                }
+                if(typeof $localStorage.courses === 'undefined')
+                {
+	    		     $localStorage.courses = data.paths;
+                    $scope.courses  = $filter('orderBy')(data.paths , $scope.sort.name);
+                }
+                else if($localStorage.courses.length != data.paths.length)
+                {   
+                    $localStorage.courses = data.paths;
+                    $scope.courses  = $filter('orderBy')(data.paths , $scope.sort.name);
+                }
+                else 
+                {
+                    $scope.courses = $localStorage.courses;
+                }
+                pagination(false);
+                $scope.shownCourse = $scope.courses[0];
+                $scope.isPreloader = false;
+                
 			})
 			.error(function(reason, status) 
 			{
@@ -29,122 +57,147 @@ app.controller('HomePageController', ['$rootScope', '$scope', 'HomePageService',
 			}).finally(function() {});
 
 	    })();
+        
 
-        $scope.showingOrderNo = 
+        $scope.sortdata = function()
         {
-            from: 1,
-            to: 5
+            $scope.courses  = $filter('orderBy')($localStorage.courses , $scope.sort.name);
+            $scope.shownCourse = $scope.courses[0];
+            pagination(false);
+        }		
+
+        $scope.leftPagination = function()
+        {   
+            if(page > 1)
+            {   
+                $('.left-arrow').prop('disabled', false);
+                page -= 1;
+                pagination(true)
+            }
+            
+            if(page == 1)
+            {   
+                $('.left-arrow').prop('disabled', true);
+                $scope.isLeft = true;
+            }
         }
-		
+
+        $scope.rightPagination = function()
+        {   
+            var maxPage = $scope.courses.length/ perPage;
+            maxPage = parseInt(maxPage) + 1;
+            if(page < maxPage)
+            {   
+                $('.right-arrow').prop('disabled', false);
+                page += 1;
+                pagination(true)
+            }
+
+            if(page >= maxPage)
+            {
+                $('.right-arrow').prop('disabled', true);
+            }
+            
+        }
+
+        $scope.upvote = function()
+        {   
+            $scope.shownCourse.upvote +=1;
+            updateLocalStorage();
+            
+        }
+
+        $scope.downvote = function()
+        {   
+            $scope.shownCourse.downvote -= 1;
+            updateLocalStorage();
+        }
+
+        $scope.setCourseInfo = function(id, $event)
+        {
+            var target = angular.element($event.currentTarget);
+                $('.tag-wrapper').removeClass('selected');
+                // $('.tag-wrapper').removeClass('selected')
+                target.closest('.tag-wrapper').addClass('selected');
+            var length = $scope.courses.length;
+            for (var i = 0; i < length; i++) 
+            {
+                if(id == $scope.courses[i].id)
+                {
+                    $scope.shownCourse = $scope.courses[i];
+                }
+            }
+        }
+        function updateLocalStorage()
+        {
+            var length = $localStorage.courses.length;
+            for (var i = 0; i < length; i++) 
+            {
+                if($localStorage.courses[i].id == $scope.shownCourse.id)
+                {
+                    $localStorage.courses[i] = $scope.shownCourse;
+                    break;
+                }                
+            }
+        }
+
+        function pagination(isLeftright)
+        {   
+            $scope.buttomCourseData =[];
+            var start = perPage*(page-1);
+            var end = Math.min(perPage*page, $scope.courses.length);
+            for (var  i= start; i < end; i++) 
+            {
+                $scope.buttomCourseData.push($scope.courses[i]);
+            }
+            if( !isLeftright )
+            {
+                $('.tag-wrapper').removeClass('selected');
+                setTimeout(function() {
+
+                    $('.buttom-tag0').addClass('selected');
+                }, 100);
+            }
+
+            $scope.showing =
+            {
+                from: Math.max(start , 1),
+                to: end,
+            }
+            
+        }
+
 
 	    $scope.SearchModel = '';
-	    $scope.searchWebsite =
+	    $scope.searchCourses =
 		{
 		    valueField: 'id',
-		    labelField: 'mix_title',
-		    searchField: 'mix_title',
+		    labelField: 'tags',
+		    searchField: 'tags',
 		    maxItems: 1,
 		    loadThrottle: 600,
             closeAfterSelect: true,
-		    placeholder: 'search (by title, url or tag )',
+		    placeholder: 'search (by tag )',
 		    load: function(query, callback)
 		    {	
-				var websitesArry = $localStorage.websiteData;
-				var length = websitesArry.length;
-				for (var i = 0; i < length; i++) 
-				{
-					websitesArry[i].mix_title = websitesArry[i].title + " " + websitesArry[i].tag + ' ' + websitesArry[i].url_address;
-				}
-				$scope.websitesList = websitesArry;
-		    	
-		    	callback($scope.websitesList)
+		    	callback($scope.courses);
 		    },
 		    onChange: function( value )
 		    {	
-		    	if(!value)
-	    		{
-	    			setPagination();
-	    			$scope.$apply();
-	    		}
-		    	else
-		    	{
-			    	var length = $localStorage.websiteData.length;
-			    	var webArry = $localStorage.websiteData;
-			    	for (var i = 0; i < length; i++) 
-			    	{
-			    		if(webArry[i].id == parseInt(value))
-			    		{	
-			    			$scope.websites = [];
-			    			$scope.websites.push(webArry[i]);
-			    			$scope.$apply();
-			    			break;
-			    		}	
-			    	}
-		    	}
-		    }
-		};
-
-		$scope.pushWebsite=
-		{
-			title: '',
-			url_address: '',
-			tag: ''
-		}
-
-		$scope.pushWebsite = function()
-		{	
-			$scope.isPushdisable = true;
-			var postData = 
-			{
-				title: $scope.pushWebsite.title,
-				url: $scope.pushWebsite.url_address,
-				tag: $scope.pushWebsite.tag
+                var coursesLength = $localStorage.courses.length;
+                for (var i = 0; i < coursesLength; i++) 
+                {   
+                    if($localStorage.courses[i].id == value)
+                    {
+                        $scope.shownCourse = $localStorage.courses[i];
+                        break;
+                    }
+                }
+			    
 			}
-			HomePageService.addWebsite(postData)
-	    	.success(function(data)
-	    	{	
-	    		$scope.message = data.message;
-	    		$scope.isPushdisable = false;
-	    		$scope.isShowMessage = true;
-	    		setTimeout(function() 
-	    		{	
-	    			$scope.isShowMessage = false;
-	    			$document.trigger('click')
-	    		}, 200);
-			})
-			.error(function(reason, status) 
-			{	
-				$scope.isPushdisable = false;
-				alert(reason);
-			}).finally(function() {});
-		}
-
-
-		$scope.pageChanged = function() 
-		{
-			setPagination();
 		};
 
-		function setPagination()
-		{
-		    $scope.showingOrderNo = 
-            {
-                from: ($scope.page-1)* $scope.perPage +1,
-                to: Math.min($scope.totalItems, $scope.page*$scope.perPage)
-            }
 
-            $scope.websites = [];
-            var websiteArry = $localStorage.websiteData;
-            var length = websiteArry.length;
-            var fromIndex = ($scope.page-1)*$scope.perPage;
-            var endIndex = Math.min(($scope.page-1)*$scope.perPage + $scope.perPage, length);
-            for (var i = fromIndex; i < endIndex; i++) 
-            {
-            	$scope.websites.push(websiteArry[i]);
-            }
-
-		}
-		
 
 	}
 ]);

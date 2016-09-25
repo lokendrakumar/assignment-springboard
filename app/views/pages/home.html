@@ -1,92 +1,137 @@
+<div class="row">
+    <div class="col-md-2 sort-wrapper">
+         <div class="row sort-header-wrapper">
+             <div class="col-md-2" style="padding-top: 3px;">
+                 <i class="fa fa-sort" aria-hidden="true"></i>
+             </div>
+             <div class="col-md-10 sort-header">
+                 Sort By
+             </div>
+         </div>
+        <div class="row col-md-12 sort-btn-wrapper">
+            <form name="mySort">
+                <label>
+                    <input type="radio" class="radio-apear" ng-click ='sortdata()' ng-model="sort.name" value="learner">
+                    Learners
+                </label>
+                <label>
+                    <input type="radio" class="radio-apear" ng-click ='sortdata()' ng-model="sort.name" value="Duration">
+                    Duration
+                </label>
+                <label>
+                    <input type="radio" class="radio-apear" ng-click ='sortdata()' ng-model="sort.name" value="upvote">
+                    Vote( Up )
+                </label>
+                <label>
+                    <input type="radio" class="radio-apear" ng-click ='sortdata()' ng-model="sort.name" value="downvote">
+                    Vote( Down )
+                </label>
+            </form>
+        </div>
+    </div>
 
-<div class="row padding-wrapper">
-    <div class="col-md-8">
-        <div class="row">
-            <div class="col-md-8 pull-right p-r-z">
-                <selectize config='searchWebsite' options='websitesList' ng-model="SearchModel"></selectize>
+    <div class="col-md-10">
+         <div class="row">
+            <div class="col-md-5" style="padding: 0px;">
+                <selectize config='searchCourses' options='courses' ng-model="SearchModel">
+                    
+                </selectize>
                 <div class="input-group">
                 </div>
             </div>
         </div>
-        <div class="row well well-lg m-t info-card" ng-repeat='website in websites track by $index'>
-            <div class="col-md-1" >
-                <!-- {{ website.favicon_image }} -->
-                <img height="50px" src="{{ website.favicon_image }}" class="img-circle" alt="No Image"/>
-            </div>
-            <div class="col-md-11 info-wrapper">
-                <div class="row title-height">
-                    {{ website.title }}
-                </div> 
-                <div class="row bottom-wrapper">
-                    <div class="col-md-3 p-r-z">
-                        <i class="fa fa-tags" aria-hidden="true"></i>
-                        {{ website.tag }}
-                    </div>
-                    <!-- <div class="col-md-1 p-l-z "> |</div> -->
-                    <div class="col-md-7 p-l-z">
-                        |
-                        <i class="fa fa-link" aria-hidden="true"></i>
-                        <a ng-href="{{website.url_address}}" target="_blank">
-                            {{ website.url_address }}
-                        </a>
-                    </div>
-                    <div class="col-md-2 pull-right align-right"> | 
-                        <a <i class="fa fa-hand-paper-o" aria-hidden="true"></i>
-                            {{ website.id }} 
-                        </a>
-                    </div>
-                </div>
+        <div class="row">
+            <div class="col-md-4 tag-wrapper" style="color: #29221A">
+                <i class="fa fa-sort" aria-hidden="true"></i>
+                 Result: {{ courses.length }} Courses found.
             </div>
         </div>
-        <div class="panel-footer" style="margin-top: 10px;">
-            <div class="row">
-               <!--  <div class="col-sm-4">
-                    <p>
-                        Show
-                        <select class="" ng-model= 'selectedItems' ng-options="opt.id as opt.value for opt in itemsPerPage" ng-change='changePerPage()'>
-                        </select>
-                        items per page
-                    </p>
-                </div> -->
+        <div class="row " style="margin-top: 10px !important">
+            <div class="col-md-12 info-wrapper">
+                <div class="row">
+                    
+                    <div class="col-md-3 image-wrapper">
+                        <img height="150px" width="200px" src="{{ shownCourse.image }}"  alt="No Image"/>
+                    </div>
 
-                <div class="col-sm-6" style="padding-top: 30px;">
-                    <p>Showing {{ showingOrderNo.from}}-{{showingOrderNo.to}} of {{ totalItems }} items</p>
+                    <div class="col-md-9">
+                        
+                        <div class="row">
+                            <div class="col-md-12 tag-wrapper">
+                                {{ shownCourse.name}}
+                            </div>
+                        </div>
+                        <div class="row" style="padding: 20px;">
+                            <i class="fa fa-tags" aria-hidden="true"></i>
+                            {{ shownCourse.tags}}
+                        </div>
+                        <div class="row" style="margin-top: 30px">
+                            
+                            <div class="col-md-2 side-info-wrapper" style="width: 80px">
+                                <div class="row wrapper coursor-pointer" ng-click ='upvote(shownCourse)'>
+                                    <i class="fa fa-chevron-up" aria-hidden="true"></i>
+                                    <span class="m-l"> {{ shownCourse.upvote}}</span>
+                                     
+                                </div>
+                                <div class="row wrapper coursor-pointer" ng-click = 'downvote(shownCourse)'>
+                                     <i class="fa fa-chevron-down" aria-hidden="true"></i>
+                                    <span class="m-l"> {{ shownCourse.downvote}} </span>  
+                                </div>
+                            </div>
+                            <div class="col-md-3 pull-right side-info-wrapper">
+                                <div class="row wrapper">
+                                     <i class="fa fa-user" aria-hidden="true"></i>
+                                     {{ shownCourse.learner}} Learners
+                                </div>
+                                <div class="row wrapper">
+                                     <i class="fa fa-clock-o" aria-hidden="true"></i>
+                                     {{ shownCourse.hours}} Hours
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-
-                <div class="col-sm-6 text-right">
-                    <uib-pagination total-items="totalItems" ng-model="page" items-per-page="perPage" max-size="maxSize" ng-change='pageChanged()' class="pagination-sm" boundary-link="true"></uib-pagination>
+                <div class="row header-padding">
+                    Description #
                 </div>
-
+                <div class="row "> 
+                    <div class="description-wrapper"> 
+                        {{ shownCourse.description }}
+                    </div>
+                </div>
+                <div class="row pull-right header-padding curriculum">
+                    <i class="fa fa-link" aria-hidden="true"></i>
+                    <a ng-href="{{shownCourse.sign_up}}" target="_blank">
+                        View Curriculum
+                    </a>
+                </div>
+                <div class="row" style="height: 30px"></div>
             </div>
         </div>
     </div>
-    <hr class="vertical"/>
-    <div class='col-md-4 push-website-wrapper'>
-        <div class='col-md-12'>
-            <div class="row push-website-header">
-                Contribute/ Add website
-            </div>
-            <div class="row m-t">
-               <input type="text" name="title" placeholder="title" ng-model="pushWebsite.title" class="form-control" />
-            </div>
-            <div class="row m-t">
-               <input type="text" name="url_address" placeholder="web/url address" ng-model="pushWebsite.url_address" class="form-control" />
-            </div>
+
+    <div class="row">  
+    <!-- <div class="col-md-10"> -->
+        <div class="col-md-1 tag-wrapper left-arrow m-l" disabled ng-click ='leftPagination()'>
+            <i class="fa fa-chevron-left" aria-hidden="true"></i>
         </div>
-        <div class="row m-t">
-            <div class="col-md-4 m-t">
-                <input type="text" name="tag" placeholder="tag" ng-model="pushWebsite.tag" class="form-control" />
-            </div>
-            <div class="col-md-4 m-t">
-                
-                <button type="submit" style="background: #448258" ng-disabled='isPushdisable' ng-click="pushWebsite()" class="btn btn-primary">push website
-                    <span style="margin-left: 10px"> <i class="fa fa-plus"  aria-hidden="true"></i> </span>
-                </button>
-            </div>
-
-       </div>
-       <div class="row col-md-12" ng-show='isShowMessage'> {{ message }} </div>
-
+        <div class="col-md-3 tag-wrapper m-lr buttom-tag{{ $index }}" ng-repeat ='course in buttomCourseData' ng-click= 'setCourseInfo( course.id, $event)'>
+             {{ course.name}}
+        </div>
+        <div class="col-md-1 tag-wrapper right-arrow pull-right" style="margin-right: 20px;" ng-click ='rightPagination()'>
+            <i class="fa fa-chevron-right" aria-hidden="true"></i>
+        </div>
     </div>
+    <!-- </div> -->
+    <div class="row">
+        <div class="col-md-4 align-center">
+            Showing from {{ showing.from }} to {{showing.to }} of {{ courses.length }}
+        </div>
+    </div>
+    
+    <div  class="preloader-wrapper" ng-show = 'isPreloader'>
+      <div class="multichannel-preloader"></div>
+   </div>
 
 </div>
