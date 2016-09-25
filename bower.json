@@ -1,0 +1,14 @@
+{
+  "name": "SmartApp",
+  "version": "1.0.0",
+  "dependencies": {
+    "bootstrap": "~3.3.5",
+    "font-awesome": "fontawesome#~4.5.0",
+    "angular": "~1.4.8",
+    "angular-animate": "~1.4.8",
+    "angular-bootstrap": "1.1.2",
+    "angular-ui-router": "~0.2.15",
+    "ngstorage": "~0.3.10",
+    "angular-selectize2": "~3.0.1"
+  }
+}
